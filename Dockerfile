@@ -45,4 +45,4 @@ RUN npm i
 COPY *.js ./
 COPY src/ ./src/
 
-CMD ["node", "lib/index.js"]
+CMD ["node", "./lib/index.js"]
