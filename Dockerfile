@@ -36,13 +36,11 @@ RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get purge --auto-remove \
     && rm -rf /tmp/* /var/lib/apt/lists/*
 
-RUN mkdir -p /app
-WORKDIR /app
+WORKDIR /usr/src/app
 
 COPY package.json ./
 RUN npm i
 
-COPY *.js ./
-COPY lib ./lib/
+COPY . .
 
-CMD ["node", "./lib/index.js"]
+CMD ["node", "lib/index.js"]
