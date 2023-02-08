@@ -90,7 +90,7 @@ async function initProject() {
       puppet: 'wechaty-puppet-padlocal', // 如果有token，记得更换对应的puppet
       puppetOptions: {
         // uos: true,
-        token: 'puppet_padlocal_6675a730abbb4180852ab5e0f78d7d62',
+        token: process.env.TOKEN || config.token,
       },
     });
 

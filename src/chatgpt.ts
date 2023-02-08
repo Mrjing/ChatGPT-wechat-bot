@@ -6,7 +6,7 @@ let chatGPT: any = {};
 let chatOption = {};
 export function initChatGPT() {
   chatGPT = new ChatGPTAPI({
-    apiKey: config.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY || config.OPENAI_API_KEY,
   });
 }
 

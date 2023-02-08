@@ -1,6 +1,6 @@
 export default {
   // 填入你的session token
-  OPENAI_API_KEY: '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',
+  OPENAI_API_KEY: '',
   // 设置获取消息的重试次数
   retryTimes: 3,
   // 在群组中设置唤醒微信机器人的关键词
@@ -17,4 +17,5 @@ export default {
   groupReplyMode: true,
   // 是否在私聊中按照回复的格式进行回复
   privateReplyMode: true,
+  token: '',
 };
