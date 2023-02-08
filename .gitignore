@@ -2,4 +2,4 @@
 */log
 .env
 *.memory-card.json
-lib
+# lib
