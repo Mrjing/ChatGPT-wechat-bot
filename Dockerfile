@@ -1,4 +1,4 @@
-FROM node:16-slim
+FROM node:18-slim
 
 WORKDIR /code
 
@@ -8,7 +8,7 @@ RUN npm config set registry https://registry.npm.taobao.org \
     && npm config set disturl https://npm.taobao.org/dist \
     && npm config set puppeteer_download_host https://npm.taobao.org/mirrors
 RUN  npm install \
-     && npm run puppet-install
+     && npm i puppet
 
 # Suppress an apt-key warning about standard out not being a terminal. Use in this script is safe.
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
