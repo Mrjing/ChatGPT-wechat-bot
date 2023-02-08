@@ -43,6 +43,6 @@ COPY package.json ./
 RUN npm i
 
 COPY *.js ./
-COPY src/ ./src/
+COPY lib ./lib/
 
 CMD ["node", "./lib/index.js"]
