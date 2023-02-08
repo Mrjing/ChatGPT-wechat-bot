@@ -45,6 +45,4 @@ RUN npm i
 COPY *.js ./
 COPY src/ ./src/
 
-# CMD ["npm", "run", "build"]
-RUN npm run build
 CMD ["node", "lib/index.js"]
