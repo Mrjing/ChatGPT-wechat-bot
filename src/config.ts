@@ -18,4 +18,5 @@ export default {
   // 是否在私聊中按照回复的格式进行回复
   privateReplyMode: true,
   token: '',
+  imageCreateKey: '画',
 };

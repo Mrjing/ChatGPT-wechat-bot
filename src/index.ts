@@ -1,7 +1,9 @@
 import { WechatyBuilder, Wechaty } from 'wechaty';
 import qrcodeTerminal from 'qrcode-terminal';
 import config from './config.js';
-import { replyMessage, initChatGPT } from './chatgpt.js';
+import { replyMessage, initChatGPT, replyImageMessage } from './chatgpt.js';
+
+const drawImagePattern = RegExp(`^画[\\s]*`);
 
 let bot: Wechaty;
 initProject();
@@ -24,10 +26,15 @@ async function onMessage(msg) {
       );
 
       const pattern = RegExp(`@${botSelf.name()}[\\s]*`);
+
       if (await msg.mentionSelf()) {
         if (pattern.test(content)) {
           const groupContent = content.replace(pattern, '');
-          await replyMessage(room, groupContent);
+          if (drawImagePattern.test(groupContent)) {
+            await replyImageMessage(room, groupContent);
+          } else {
+            await replyMessage(room, groupContent);
+          }
           return;
         } else {
           console.log(
@@ -39,10 +46,14 @@ async function onMessage(msg) {
       console.log(`talker: ${alias} content: ${content}`);
       if (config.autoReply) {
         if (content.startsWith(config.privateKey)) {
-          await replyMessage(
-            contact,
-            content.substring(config.privateKey.length).trim()
-          );
+          const privateContent = content
+            .substring(config.privateKey.length)
+            .trim();
+          if (drawImagePattern.test(privateContent)) {
+            await replyImageMessage(contact, privateContent);
+          } else {
+            await replyMessage(contact, privateContent);
+          }
         } else {
           console.log(
             'Content is not within the scope of the customizition format'
@@ -50,8 +61,8 @@ async function onMessage(msg) {
         }
       }
     }
-  } catch (e) {
-    console.log('onMessage error:', e);
+  } catch (e: any) {
+    console.log('onMessage error:', e.message);
   }
 }
 
@@ -111,7 +122,7 @@ async function initProject() {
       .start()
       .then(() => console.log('Start to log in wechat...'))
       .catch((e) => console.error(e));
-  } catch (error) {
-    console.log('init error: ', error);
+  } catch (error: any) {
+    console.log('init error: ', error.message);
   }
 }
