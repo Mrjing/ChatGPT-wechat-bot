@@ -1,12 +1,21 @@
 import { ChatGPTAPI } from 'chatgpt';
 import config from './config.js';
 import { retryRequest } from './utils.js';
+import { getOpenAIImage } from './openai.js';
+import { FileBox } from 'file-box';
 
 let chatGPT: any = {};
 let chatOption = {};
 export function initChatGPT() {
   chatGPT = new ChatGPTAPI({
     apiKey: process.env.OPENAI_API_KEY || config.OPENAI_API_KEY,
+    completionParams: {
+      temperature: 0.9,
+      top_p: 1,
+      frequency_penalty: 0.0,
+      presence_penalty: 0.6,
+      stop: [' Human:', ' AI:'],
+    },
   });
 }
 
@@ -24,6 +33,21 @@ async function getChatGPTReply(content, contactId) {
   console.log('response: ', conversationId, text);
   // response is a markdown-formatted string
   return text;
+}
+
+export async function replyImageMessage(contact, content) {
+  try {
+    const imgUrl = await getOpenAIImage(content);
+    if (imgUrl) {
+      const fileBox = FileBox.fromUrl(imgUrl);
+      await contact.say(fileBox);
+    } else {
+      const sayContent = '对不起，我暂时有点忙，请稍后重试';
+      await contact.say(sayContent);
+    }
+  } catch (e) {
+    console.log('replyImageMessage err', e);
+  }
 }
 
 export async function replyMessage(contact, content) {
