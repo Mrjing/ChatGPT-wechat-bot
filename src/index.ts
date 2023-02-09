@@ -1,50 +1,57 @@
-import { WechatyBuilder } from 'wechaty';
+import { WechatyBuilder, Wechaty } from 'wechaty';
 import qrcodeTerminal from 'qrcode-terminal';
 import config from './config.js';
 import { replyMessage, initChatGPT } from './chatgpt.js';
 
-let bot: any = {};
+let bot: Wechaty;
 initProject();
 async function onMessage(msg) {
+  const botSelf = bot.currentUser;
   const contact = msg.talker();
-  const receiver = msg.to();
   const content = msg.text().trim();
   const room = msg.room();
-  const alias = (await contact.alias()) || (await contact.name());
   const isText = msg.type() === bot.Message.Type.Text;
   if (msg.self()) {
     return;
   }
+  try {
+    const alias = (await contact.alias()) || (await contact.name());
 
-  if (room && isText) {
-    const topic = await room.topic();
-    console.log(
-      `Group name: ${topic} talker: ${await contact.name()} content: ${content}`
-    );
+    if (room && isText) {
+      const topic = await room.topic();
+      console.log(
+        `Group name: ${topic} talker: ${await contact.name()} content: ${content}`
+      );
 
-    const pattern = RegExp(`^@${config.groupKey}[\\s]*`);
-    if (await msg.mentionSelf()) {
-      if (pattern.test(content)) {
-        const groupContent = content.replace(pattern, '');
-        replyMessage(room, groupContent);
-        return;
-      } else {
-        console.log(
-          'Content is not within the scope of the customizition format'
-        );
+      const pattern = RegExp(`@${botSelf.name()}[\\s]*`);
+      if (await msg.mentionSelf()) {
+        if (pattern.test(content)) {
+          const groupContent = content.replace(pattern, '');
+          await replyMessage(room, groupContent);
+          return;
+        } else {
+          console.log(
+            'Content is not within the scope of the customizition format'
+          );
+        }
+      }
+    } else if (isText) {
+      console.log(`talker: ${alias} content: ${content}`);
+      if (config.autoReply) {
+        if (content.startsWith(config.privateKey)) {
+          await replyMessage(
+            contact,
+            content.substring(config.privateKey.length).trim()
+          );
+        } else {
+          console.log(
+            'Content is not within the scope of the customizition format'
+          );
+        }
       }
     }
-  } else if (isText) {
-    console.log(`talker: ${alias} content: ${content}`);
-    if (config.autoReply) {
-      // if (content.startsWith(config.privateKey)) {
-      replyMessage(contact, content.substring(config.privateKey.length).trim());
-      // } else {
-      //   console.log(
-      //     'Content is not within the scope of the customizition format'
-      //   );
-      // }
-    }
+  } catch (e) {
+    console.log('onMessage error:', e);
   }
 }
 
@@ -83,7 +90,7 @@ async function initProject() {
   try {
     await initChatGPT();
     bot = WechatyBuilder.build({
-      name: 'WechatEveryDay',
+      name: 'WechatEveryDay1',
       puppet: 'wechaty-puppet-padlocal', // 如果有token，记得更换对应的puppet
       puppetOptions: {
         // uos: true,
