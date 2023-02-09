@@ -37,16 +37,13 @@ async function onMessage(msg) {
   } else if (isText) {
     console.log(`talker: ${alias} content: ${content}`);
     if (config.autoReply) {
-      if (content.startsWith(config.privateKey)) {
-        replyMessage(
-          contact,
-          content.substring(config.privateKey.length).trim()
-        );
-      } else {
-        console.log(
-          'Content is not within the scope of the customizition format'
-        );
-      }
+      // if (content.startsWith(config.privateKey)) {
+      replyMessage(contact, content.substring(config.privateKey.length).trim());
+      // } else {
+      //   console.log(
+      //     'Content is not within the scope of the customizition format'
+      //   );
+      // }
     }
   }
 }

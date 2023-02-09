@@ -58,11 +58,12 @@ export async function replyMessage(contact, content) {
     }
   } catch (e: any) {
     console.error(e);
+    const sayContent = '对不起，我暂时有点忙，请稍后重试';
     if (e.message.includes('timed out')) {
-      await contact.say(
-        content +
-          '\n-----------\nERROR: Please try again, ChatGPT timed out for waiting response.'
+      console.error(
+        'ERROR: Please try again, ChatGPT timed out for waiting response.'
       );
     }
+    await contact.say(sayContent);
   }
 }
