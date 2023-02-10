@@ -1,7 +1,7 @@
 import { WechatyBuilder, Wechaty } from 'wechaty';
 import qrcodeTerminal from 'qrcode-terminal';
 import config from './config.js';
-import { replyMessage, initChatGPT, replyImageMessage } from './chatgpt.js';
+import { replyMessage, replyImageMessage } from './chatgpt.js';
 
 const drawImagePattern = RegExp(`^画[\\s]*`);
 
@@ -99,7 +99,7 @@ async function onFriendShip(friendship) {
 
 async function initProject() {
   try {
-    await initChatGPT();
+    // await initChatGPT();
     bot = WechatyBuilder.build({
       name: 'WechatEveryDay1',
       puppet: 'wechaty-puppet-padlocal', // 如果有token，记得更换对应的puppet
