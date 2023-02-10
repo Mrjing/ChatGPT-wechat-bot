@@ -1,37 +1,41 @@
 import { ChatGPTAPI } from 'chatgpt';
 import config from './config.js';
 import { retryRequest } from './utils.js';
-import { getOpenAIImage } from './openai.js';
+import { getOpenAIImage, getOpenAiReply } from './openai.js';
 import { FileBox } from 'file-box';
 
-let chatGPT: any = {};
+// let chatGPT: any = {};
 let chatOption = {};
-export function initChatGPT() {
-  chatGPT = new ChatGPTAPI({
-    apiKey: process.env.OPENAI_API_KEY || config.OPENAI_API_KEY,
-    completionParams: {
-      temperature: 0.9,
-      top_p: 1,
-      frequency_penalty: 0.0,
-      presence_penalty: 0.6,
-      stop: [' Human:', ' AI:'],
-    },
-  });
-}
+// export function initChatGPT() {
+//   chatGPT = new ChatGPTAPI({
+//     apiKey: process.env.OPENAI_API_KEY || config.OPENAI_API_KEY,
+//     completionParams: {
+//       model: 'text-davinci-003',
+//       temperature: 0.9,
+//       top_p: 1,
+//       frequency_penalty: 0.0,
+//       presence_penalty: 0.6,
+//       stop: [' Human:', ' AI:'],
+//     },
+//   });
+// }
 
-async function getChatGPTReply(content, contactId) {
-  const { conversationId, text, id } = await chatGPT.sendMessage(
-    content,
-    chatOption[contactId]
-  );
-  chatOption = {
-    [contactId]: {
-      conversationId,
-      parentMessageId: id,
-    },
-  };
-  console.log('response: ', conversationId, text);
+async function getChatGPTReply(content) {
+  // const { conversationId, text, id } = await chatGPT.sendMessage(
+  //   content,
+  //   chatOption[contactId]
+  // );
+  // chatOption = {
+  //   [contactId]: {
+  //     conversationId,
+  //     parentMessageId: id,
+  //   },
+  // };
+  // console.log('response: ', conversationId, text);
+
+  // 先替换为调用 openAI 接口实现，再考虑上下文实现
   // response is a markdown-formatted string
+  const text = await getOpenAiReply(content);
   return text;
 }
 
@@ -64,7 +68,7 @@ export async function replyMessage(contact, content) {
       return;
     }
     const message = await retryRequest(
-      () => getChatGPTReply(content, contactId),
+      () => getChatGPTReply(content),
       config.retryTimes,
       500
     );
