@@ -1,11 +1,8 @@
-import { ChatGPTAPI } from 'chatgpt';
 import config from './config.js';
 import { retryRequest } from './utils.js';
 import { getOpenAIImage, getOpenAiReply } from './openai.js';
 import { FileBox } from 'file-box';
 
-// let chatGPT: any = {};
-let chatOption = {};
 // export function initChatGPT() {
 //   chatGPT = new ChatGPTAPI({
 //     apiKey: process.env.OPENAI_API_KEY || config.OPENAI_API_KEY,
@@ -19,6 +16,14 @@ let chatOption = {};
 //     },
 //   });
 // }
+// 维护全局的对话上下文
+const contactContext = new Map<
+  string, // contactId
+  {
+    question: string;
+    answer: string;
+  }[]
+>();
 
 async function getChatGPTReply(content) {
   // const { conversationId, text, id } = await chatGPT.sendMessage(
@@ -57,21 +62,21 @@ export async function replyImageMessage(contact, content) {
 export async function replyMessage(contact, content) {
   const { id: contactId } = contact;
   try {
-    if (
-      content.trim().toLocaleLowerCase() === config.resetKey.toLocaleLowerCase()
-    ) {
-      chatOption = {
-        ...chatOption,
-        [contactId]: {},
-      };
-      await contact.say('Previous conversation has been reset.');
-      return;
+    if (content === config.resetKey) {
+      clearContactContext(contactId);
+      return '会话已重置';
     }
+
+    const transformContent = buildContactContextQuery(content, contactId);
+
     const message = await retryRequest(
-      () => getChatGPTReply(content),
+      () => getChatGPTReply(transformContent),
       config.retryTimes,
       500
     );
+    if (message) {
+      saveContactContext(content, message, contactId);
+    }
 
     if (
       (contact.topic && contact?.topic() && config.groupReplyMode) ||
@@ -85,6 +90,8 @@ export async function replyMessage(contact, content) {
     }
   } catch (e: any) {
     console.error('-----------', e.message, e.stack);
+    // 清理 当前contact的会话
+    clearContactContext(contactId);
     const sayContent = '对不起，我暂时有点忙，请稍后重试';
     if (e.message.includes('timed out')) {
       console.error(
@@ -94,3 +101,64 @@ export async function replyMessage(contact, content) {
     await contact.say(sayContent);
   }
 }
+
+export const buildContactContextQuery = (query: string, contactId: string) => {
+  let prompt = config.characterDesc || '';
+  if (prompt) {
+    prompt += '\n\n';
+  }
+  const curContactContext = contactContext.get(contactId);
+  if (curContactContext) {
+    for (const conversation of curContactContext) {
+      prompt +=
+        'Q: ' +
+        conversation['question'] +
+        '\nA: ' +
+        conversation['answer'] +
+        '\n';
+    }
+    prompt += 'Q: ' + query + '\nA: ';
+    return prompt;
+  } else {
+    return prompt + 'Q: ' + query + '\nA: ';
+  }
+};
+
+export const saveContactContext = (
+  query: string,
+  answer: string,
+  contactId: string
+) => {
+  const curConversation = {
+    question: query,
+    answer: answer,
+  };
+  const curContactContext = contactContext.get(contactId);
+  if (curContactContext) {
+    contactContext.set(contactId, [...curContactContext, curConversation]);
+  } else {
+    contactContext.set(contactId, [curConversation]);
+  }
+
+  discardExceedConversation(contactId);
+};
+
+export const discardExceedConversation = (contactId: string) => {
+  const curContactContext = contactContext.get(contactId);
+  if (curContactContext) {
+    const curContactContextTotalToken = curContactContext.reduce(
+      (prev, cur) => {
+        return prev + cur.answer.length + cur.question.length;
+      },
+      0
+    );
+    if (curContactContextTotalToken > config.conversationMaxTokens) {
+      curContactContext.shift();
+      contactContext.set(contactId, [...curContactContext]);
+    }
+  }
+};
+
+export const clearContactContext = (contactId: string) => {
+  contactContext.set(contactId, []);
+};
