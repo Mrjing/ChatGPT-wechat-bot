@@ -14,11 +14,11 @@ export async function getOpenAiReply(prompt) {
     model: 'text-davinci-003',
     prompt: prompt,
     temperature: 0.9, // 每次返回的答案的相似度0-1（0：每次都一样，1：每次都不一样）
-    max_tokens: 4000,
+    max_tokens: 1200,
     top_p: 1,
     frequency_penalty: 0.0,
     presence_penalty: 0.6,
-    stop: [' Human:', ' AI:'],
+    stop: ['Q: ', 'A: '],
   });
 
   const reply = markdownToText(response.data.choices[0].text);
