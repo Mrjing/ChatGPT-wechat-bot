@@ -64,7 +64,8 @@ export async function replyMessage(contact, content) {
   try {
     if (content === config.resetKey) {
       clearContactContext(contactId);
-      return '会话已重置';
+      await contact.say('会话已重置');
+      return;
     }
 
     const transformContent = buildContactContextQuery(content, contactId);
