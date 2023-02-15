@@ -101,7 +101,7 @@ async function initProject() {
   try {
     // await initChatGPT();
     bot = WechatyBuilder.build({
-      name: 'WechatEveryDay1',
+      name: 'WechatTest',
       puppet: 'wechaty-puppet-padlocal', // 如果有token，记得更换对应的puppet
       puppetOptions: {
         // uos: true,
